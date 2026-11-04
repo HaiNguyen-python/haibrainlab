@@ -1,5 +1,7 @@
 # HaiBrainLab
 
+**Live:** https://hainguyen-python.github.io/haibrainlab/ · Source: https://github.com/HaiNguyen-python/haibrainlab
+
 Version 1.6.0 · MIT License · [Changelog](CHANGELOG.md) · [Methods](docs/METHODS.md) · [Content review](docs/REVIEW.md) · [Cite](CITATION.cff)
 
 An interactive neuroscience simulator for learning how the brain works, from a single ion channel up to whole-brain pathways, with classroom and research modules. Runs entirely in the browser; nothing is collected.
