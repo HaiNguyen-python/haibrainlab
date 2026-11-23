@@ -214,3 +214,16 @@ footer a{color:var(--muted)} footer a:hover{color:var(--text)}
 .note .meta{font-size:11.5px;color:var(--muted);display:flex;justify-content:space-between;gap:8px} .note .meta button{background:none;border:0;color:var(--muted);cursor:pointer} .note .meta button:hover{color:var(--bad)}
 .note p{margin:4px 0 0;white-space:pre-wrap}
 .ref{padding:5px 0;border-bottom:1px solid #1c2437;font-size:12.8px} .ref i{color:#c9d2e3} .ref .paperlink{font-size:11.5px}
+
+/* research bench (v1.7) */
+.bchips{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px}
+.bchips button{display:flex;align-items:center;gap:8px;text-align:left;background:var(--panel2);color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13.5px;cursor:pointer;line-height:1.2}
+.bchips button span{font-size:17px}
+.bchips button:hover{color:var(--text);border-color:var(--accent)}
+.bchips button.active{color:var(--text);border-color:var(--accent);background:linear-gradient(180deg,#1b2740,#16203a)}
+.bnum{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:100%}
+#benchQ{font-size:17px}
+#benchBody .row{margin-top:4px}
+#benchBody canvas{margin-top:8px;display:block;width:100%}
+#benchBody .pill b{color:var(--text)}
+.lesson .refs{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px;margin-top:12px}

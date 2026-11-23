@@ -1,4 +1,13 @@
 # Changelog
+## 1.7.0 — 2026-11-23
+
+- New tab 9, Research bench: nine tools that each reproduce a published result, compare with theory and export CSV. Associative memory (Hopfield 1982), synaptic competition under STDP (Song, Miller & Abbott 2000), dopamine and TD learning (Schultz, Dayan & Montague 1997), drift-diffusion decisions (Ratcliff 1978), Wilson–Cowan rhythms (1972), Kuramoto synchronisation (1975), Hodgkin–Huxley bistability with on and off switching (Guttman, Lewis & Rinzel 1980), a spike-train analyser that reads your own CSV, and a study planner with clustered designs.
+- 27 automatic bench checks against theoretical or published values.
+- Network tab: mean-field (Siegert) prediction of the Brunel network's firing rate shown beside the simulated rate.
+- Neuron tab: export of the current run as a standard-library Python script; verified to reproduce the browser's spike times.
+- Reference library grown by 52 sources; bench fully translated into Vietnamese; deep links `#bench/<tool>`; key `9`.
+- Charts: tick labels no longer collide with axis labels.
+
 ## 1.6.0 — 2026-11-04
 
 - Network tab: Brunel (2000) sparse LIF network at the paper’s size (12 500 neurons, 15.6 million synapses) as a second model, with regime diagram, the paper’s four example parameter sets, and CV(ISI) readout; adaptive LFP scale.

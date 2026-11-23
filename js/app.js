@@ -39,7 +39,7 @@ function plot(c, series, opts){
   ctx.strokeStyle='#2a3550'; ctx.beginPath(); ctx.moveTo(p.l,p.t); ctx.lineTo(p.l,p.t+ph); ctx.lineTo(w-p.r,p.t+ph); ctx.stroke();
   ctx.fillStyle='#8e9bb3'; ctx.font='11px Inter, system-ui'; ctx.textAlign='right';
   for(let i=0;i<=ny;i++){ const v=o.y1-(o.y1-o.y0)*i/ny; ctx.fillText(fmtNum(v),p.l-5,p.t+i*ph/ny+4); }
-  ctx.textAlign='center'; for(let i=0;i<=nx;i++){ const v=o.x0+(o.x1-o.x0)*i/nx; ctx.fillText(fmtNum(v),X(v),h-6); }
+  const xlw=o.xlabel?ctx.measureText(o.xlabel).width+10:0; ctx.textAlign='center'; for(let i=0;i<=nx;i++){ const v=o.x0+(o.x1-o.x0)*i/nx; if(xlw&&X(v)+14>w-p.r-xlw) continue; ctx.fillText(fmtNum(v),X(v),h-6); }
   for(const hl of o.hlines){ ctx.strokeStyle=hl.color||'#555'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(p.l,Y(hl.y)); ctx.lineTo(w-p.r,Y(hl.y)); ctx.stroke(); ctx.setLineDash([]); if(hl.label){ctx.fillStyle=hl.color||'#888';ctx.textAlign='left';ctx.font='10.5px Inter, system-ui';ctx.fillText(hl.label,p.l+4,Y(hl.y)-3);} }
   ctx.save(); ctx.beginPath(); ctx.rect(p.l,p.t,pw,ph); ctx.clip();
   for(const s of series){ const d=s.data; if(!d||d.length<2) continue; const n=d.length; const xs=s.x; const yc=v=>Y(clamp(v,o.y0-(o.y1-o.y0),o.y1+(o.y1-o.y0)));
@@ -61,7 +61,7 @@ function fmtNum(v){ const a=Math.abs(v); if(a>=100) return Math.round(v).toStrin
 document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('active',x===b));
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.id==='tab-'+b.dataset.tab));
-  activeTab=b.dataset.tab; if(activeTab==='neuron') neuronRun(); if(activeTab==='synapse'){ synDraw(); stdpDraw(); } if(activeTab==='network') netDrawAll(); if(activeTab==='lang'&&typeof runSim==='function') runSim(); if(activeTab==='code'&&typeof runCE==='function') runCE();
+  activeTab=b.dataset.tab; if(activeTab==='neuron') neuronRun(); if(activeTab==='synapse'){ synDraw(); stdpDraw(); } if(activeTab==='network') netDrawAll(); if(activeTab==='lang'&&typeof runSim==='function') runSim(); if(activeTab==='code'&&typeof runCE==='function') runCE(); if(activeTab==='bench'&&window.Bench) window.Bench.show();
   window.scrollTo({top:0});
 }));
 let activeTab='start';
@@ -829,19 +829,19 @@ neuronRun();
 window.addEventListener('resize',()=>{ if(activeTab==='neuron') renderNeuron(); if(activeTab==='start') drawFigures(); if(activeTab==='lang'&&typeof runSim==='function') runSim(); if(activeTab==='code'&&typeof runCE==='function') runCE(); stdpDraw(); });
 
 // ============================================================ v1.0 PROFESSIONAL LAYER: version, deep links, shortcuts, export, about, paper links
-const APP_VERSION='1.6.0';
-const TAB_KEYS=['start','neuron','synapse','network','brain','live','lang','code','quiz'];
+const APP_VERSION='1.7.0';
+const TAB_KEYS=['start','neuron','synapse','network','brain','live','lang','code','quiz','bench'];
 function showTab(name){ const b=document.querySelector('#nav button[data-tab="'+name+'"]'); if(b) b.click(); }
 (function tabsPro(){
   const nav=$('nav'); nav.setAttribute('role','tablist'); nav.querySelectorAll('button').forEach(b=>{ b.setAttribute('role','tab'); b.setAttribute('aria-controls','tab-'+b.dataset.tab);
-    b.addEventListener('click',()=>{ nav.querySelectorAll('button').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false')); try{ history.replaceState(null,'','#'+b.dataset.tab); localStorage.setItem('brainlab.tab',b.dataset.tab); }catch(e){} }); });
+    b.addEventListener('click',()=>{ nav.querySelectorAll('button').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false')); try{ history.replaceState(null,'',location.hash.indexOf('#'+b.dataset.tab+'/')===0?location.hash:'#'+b.dataset.tab); localStorage.setItem('brainlab.tab',b.dataset.tab); }catch(e){} }); });
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('role','tabpanel'));
   // deep links: #neuron, #live/code_ai, #code
   const applyHash=()=>{ const h=location.hash.replace('#','').split('/'); if(h[0]&&TAB_KEYS.includes(h[0])){ showTab(h[0]); if(h[0]==='live'&&h[1]){ let tries=0; const iv=setInterval(()=>{ if(window.openLiveScenario){ window.openLiveScenario(h[1]); clearInterval(iv); } else if(++tries>50) clearInterval(iv); },200); } return true; } return false; };
   if(!applyHash()){ try{ const last=localStorage.getItem('brainlab.tab'); if(last&&TAB_KEYS.includes(last)&&last!=='start') showTab(last); }catch(e){} }
   window.addEventListener('hashchange',applyHash);
   document.addEventListener('keydown',e=>{ const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='select'||tag==='textarea'||e.ctrlKey||e.metaKey||e.altKey) return;
-    if(/^[0-8]$/.test(e.key)){ showTab(TAB_KEYS[+e.key]); } else if(e.key==='g'){ $('jargonBtn').click(); } else if(e.key==='?'){ $('aboutBtn').click(); } });
+    if(/^[0-9]$/.test(e.key)){ showTab(TAB_KEYS[+e.key]); } else if(e.key==='g'){ $('jargonBtn').click(); } else if(e.key==='?'){ $('aboutBtn').click(); } });
 })();
 // PNG export for every 2-D chart
 (function exportPro(){
@@ -856,9 +856,9 @@ function showTab(name){ const b=document.querySelector('#nav button[data-tab="'+
   const d=$('aboutDrawer'); d.innerHTML=`<div class="row" style="justify-content:space-between"><h2>About HaiBrainLab <span class="pill">v${APP_VERSION}</span></h2><button class="btn small" id="aboutClose">✕</button></div>
   <p>An interactive neuroscience simulator for learners, teachers and computing-education research. Runs entirely in the browser; no data is collected.</p>
   <h3>What is simulated, what is illustrated</h3>
-  <p>The Neuron, Synapse and Network tabs are numerical simulations of published models (Hodgkin–Huxley 1952, Izhikevich 2003, Bi &amp; Poo 1998). The 3D brain, the live scenarios, the language simulator and the easy-answers model are illustrative models built from the literature; their numbers are not measurements. Full equations and parameters: <a href="docs/METHODS.md" target="_blank" rel="noopener">docs/METHODS.md</a>.</p>
+  <p>The Neuron, Synapse and Network tabs are numerical simulations of published models (Hodgkin–Huxley 1952, Izhikevich 2003, Bi &amp; Poo 1998). The Research bench reproduces further published models and checks each against theory. The 3D brain, the live scenarios, the language simulator and the easy-answers model are illustrative models built from the literature; their numbers are not measurements. Full equations and parameters: <a href="docs/METHODS.md" target="_blank" rel="noopener">docs/METHODS.md</a>.</p>
   <h3>Keyboard shortcuts</h3>
-  <p><kbd>0</kbd>–<kbd>8</kbd> switch tabs · <kbd>g</kbd> glossary · <kbd>?</kbd> this dialog · <kbd>Esc</kbd> close</p>
+  <p><kbd>0</kbd>–<kbd>9</kbd> switch tabs · <kbd>g</kbd> glossary · <kbd>?</kbd> this dialog · <kbd>Esc</kbd> close</p>
   <h3>Sharing</h3>
   <p>Every tab has a link: <code>#neuron</code>, <code>#code</code>, and live scenarios open directly with <code>#live/code_ai</code>. Hover any chart for a PNG download; the 3D views have a screenshot button.</p>
   <h3>Cite</h3>
@@ -883,13 +883,14 @@ function showTab(name){ const b=document.querySelector('#nav button[data-tab="'+
   const KEY='brainlab.notes'; const d=$('noteDrawer');
   const load=()=>{ try{ return JSON.parse(localStorage.getItem(KEY)||'[]'); }catch(e){ return []; } };
   const save=n=>{ try{ localStorage.setItem(KEY,JSON.stringify(n)); }catch(e){} };
-  const TABN={start:'Start here',neuron:'Neuron',synapse:'Synapse',network:'Network',brain:'Brain map',live:'Live brain',lang:'Language class',code:'Programming brain',quiz:'Quiz'};
+  const TABN={start:'Start here',neuron:'Neuron',synapse:'Synapse',network:'Network',brain:'Brain map',live:'Live brain',lang:'Language class',code:'Programming brain',quiz:'Quiz',bench:'Research bench'};
   window.noteContext=()=>{ const nb=document.querySelector('#nav button[data-tab="'+activeTab+'"]'); let c=nb?nb.textContent.replace(/^\d+\s*·\s*/,''):(TABN[activeTab]||activeTab);
     if(activeTab==='neuron'&&typeof lastSim!=='undefined'&&lastSim){ const P=lastSim.P; c+=` · ${P.model.toUpperCase()} I=${P.I} t0=${P.t0} dur=${P.dur} noise=${P.noise}`+(P.model==='hh'?` gNa×${P.gNa} gK×${P.gK} gL×${P.gL}`:P.model==='izh'?` a=${P.iA} b=${P.iB} c=${P.iC} d=${P.iD}`:` τ=${P.lTau} θ=${P.lTh}`)+` · spikes=${lastSim.spikes.length}`; }
     if(activeTab==='network') c+=` · wE=${$('wE').value} wI=${$('wI').value} input=${$('nzIn').value} · t=${$('netT').textContent} ms rate=${$('netRate').textContent} Hz sync=${$('netSync').textContent}`;
     if(activeTab==='synapse') c+=` · ${$('sType').value} w=${$('sW').value} τ=${$('sTau').value}`;
     if(activeTab==='brain'&&selectedRegion) c+=` · ${REGIONS.find(r=>r.id===selectedRegion).name}`+(lesions.size?` · lesions: ${[...lesions].join(', ')}`:'');
     if(activeTab==='live'&&window.liveContext) c+=` · ${window.liveContext()}`;
+    if(activeTab==='bench'&&window.benchContext) c+=` · ${window.benchContext()}`;
     if(activeTab==='code') c+=` · ${$('ctTask').value}/${$('ctLevel').value} · difficulty ${$('ceD').value}, prior ${$('ceP').value}`;
     return c; };
   function render(){ const notes=load(); d.innerHTML=`<div class="row" style="justify-content:space-between"><h2>${t('nbTitle','Lab notebook')} <span class="pill">${notes.length}</span></h2><button class="btn small" id="noteClose">✕</button></div>
@@ -1002,6 +1003,59 @@ const LIBRARY=[
   ['Prather et al. (2024).','The widening gap: the benefits and harms of generative AI for novice programmers.','ICER 2024'],
   ['Denny, Prather, Becker, Finnie-Ansley, Hellas, Leinonen et al. (2024).','Computing education in the era of generative AI.','Commun ACM 67(2):56–67'],
   ['Xie et al. (2019).','A theory of instruction for introductory programming skills.','Computer Science Education 29:205–253']]],
+ ['Computational models and methods (research bench)',[
+  ['Hopfield (1982).','Neural networks and physical systems with emergent collective computational abilities.','PNAS 79:2554–2558'],
+  ['Amit, Gutfreund & Sompolinsky (1985).','Storing infinite numbers of patterns in a spin-glass model of neural networks.','Phys Rev Lett 55:1530–1533'],
+  ['Marr (1971).','Simple memory: a theory for archicortex.','Phil Trans R Soc B 262:23–81'],
+  ['Treves & Rolls (1994).','Computational analysis of the role of the hippocampus in memory.','Hippocampus 4:374–391'],
+  ['Leutgeb, Leutgeb, Moser & Moser (2007).','Pattern separation in the dentate gyrus and CA3 of the hippocampus.','Science 315:961–966'],
+  ['Yassa & Stark (2011).','Pattern separation in the hippocampus.','Trends Neurosci 34:515–525'],
+  ['Krotov & Hopfield (2016).','Dense associative memory for pattern recognition.','NeurIPS 29'],
+  ['Ramsauer et al. (2021).','Hopfield networks is all you need.','ICLR 2021'],
+  ['Song, Miller & Abbott (2000).','Competitive Hebbian learning through spike-timing-dependent synaptic plasticity.','Nat Neurosci 3:919–926'],
+  ['van Rossum, Bi & Turrigiano (2000).','Stable Hebbian learning from spike timing-dependent plasticity.','J Neurosci 20:8812–8821'],
+  ['Song, Sjöström, Reigl, Nelson & Chklovskii (2005).','Highly nonrandom features of synaptic connectivity in local cortical circuits.','PLoS Biol 3:e68'],
+  ['Buzsáki & Mizuseki (2014).','The log-dynamic brain: how skewed distributions affect network operations.','Nat Rev Neurosci 15:264–278'],
+  ['Sutton (1988).','Learning to predict by the methods of temporal differences.','Machine Learning 3:9–44'],
+  ['Montague, Dayan & Sejnowski (1996).','A framework for mesencephalic dopamine systems based on predictive Hebbian learning.','J Neurosci 16:1936–1947'],
+  ['Fiorillo, Tobler & Schultz (2003).','Discrete coding of reward probability and uncertainty by dopamine neurons.','Science 299:1898–1902'],
+  ['Pan, Schmidt, Wickens & Hyland (2005).','Dopamine cells respond to predicted events during classical conditioning: evidence for eligibility traces in the reward-learning network.','J Neurosci 25:6235–6242'],
+  ['Dabney et al. (2020).','A distributional code for value in dopamine-based reinforcement learning.','Nature 577:671–675'],
+  ['Kamin (1969).','Predictability, surprise, attention, and conditioning.','In: Punishment and Aversive Behavior, Appleton-Century-Crofts'],
+  ['Rescorla & Wagner (1972).','A theory of Pavlovian conditioning: variations in the effectiveness of reinforcement and nonreinforcement.','In: Classical Conditioning II, Appleton-Century-Crofts'],
+  ['Ratcliff (1978).','A theory of memory retrieval.','Psychol Rev 85:59–108'],
+  ['Ratcliff & Rouder (1998).','Modeling response times for two-choice decisions.','Psychol Sci 9:347–356'],
+  ['Roitman & Shadlen (2002).','Response of neurons in the lateral intraparietal area during a combined visual discrimination reaction time task.','J Neurosci 22:9475–9489'],
+  ['Bogacz, Brown, Moehlis, Holmes & Cohen (2006).','The physics of optimal decision making: a formal analysis of models of performance in two-alternative forced-choice tasks.','Psychol Rev 113:700–765'],
+  ['Gold & Shadlen (2007).','The neural basis of decision making.','Annu Rev Neurosci 30:535–574'],
+  ['van der Maas, Molenaar, Maris, Kievit & Borsboom (2011).','Cognitive psychology meets psychometric theory: on the relation between process models for decision making and latent variable models.','Psychol Rev 118:339–356'],
+  ['Latimer, Yates, Meister, Huk & Pillow (2015).','Single-trial spike trains in parietal cortex reveal discrete steps during decision-making.','Science 349:184–187'],
+  ['Katz, Yates, Pillow & Huk (2016).','Dissociated functional significance of decision-related activity in the primate dorsal stream.','Nature 535:285–288'],
+  ['Broadie, Glasserman & Kou (1997).','A continuity correction for discrete barrier options.','Mathematical Finance 7:325–349'],
+  ['Wilson & Cowan (1972).','Excitatory and inhibitory interactions in localized populations of model neurons.','Biophys J 12:1–24'],
+  ['Jansen & Rit (1995).','Electroencephalogram and visual evoked potential generation in a mathematical model of coupled cortical columns.','Biol Cybern 73:357–366'],
+  ['Deco, Jirsa, Robinson, Breakspear & Friston (2008).','The dynamic brain: from spiking neurons to neural masses and cortical fields.','PLoS Comput Biol 4:e1000092'],
+  ['Buzsáki & Wang (2012).','Mechanisms of gamma oscillations.','Annu Rev Neurosci 35:203–225'],
+  ['Kuramoto (1975).','Self-entrainment of a population of coupled non-linear oscillators.','Lecture Notes in Physics 39:420–422'],
+  ['Strogatz (2000).','From Kuramoto to Crawford: exploring the onset of synchronization in populations of coupled oscillators.','Physica D 143:1–20'],
+  ['Breakspear, Heitmann & Daffertshofer (2010).','Generative models of cortical oscillations: neurobiological implications of the Kuramoto model.','Front Hum Neurosci 4:190'],
+  ['Cabral, Hugues, Sporns & Deco (2011).','Role of local network oscillations in resting-state functional connectivity.','NeuroImage 57:130–139'],
+  ['Hassard (1978).','Bifurcation of periodic solutions of the Hodgkin–Huxley model for the squid giant axon.','J Theor Biol 71:401–420'],
+  ['Rinzel & Miller (1980).','Numerical calculation of stable and unstable periodic solutions to the Hodgkin–Huxley equations.','Math Biosci 49:27–59'],
+  ['Guttman, Lewis & Rinzel (1980).','Control of repetitive firing in squid axon membrane as a model for a neuroneoscillator.','J Physiol 305:377–395'],
+  ['Egorov, Hamam, Fransén, Hasselmo & Alonso (2002).','Graded persistent activity in entorhinal cortex neurons.','Nature 420:173–178'],
+  ['Loewenstein et al. (2005).','Bistability of cerebellar Purkinje cells modulated by sensory stimulation.','Nat Neurosci 8:202–211'],
+  ['Amit & Brunel (1997).','Model of global spontaneous activity and local structured activity during delay periods in the cerebral cortex.','Cereb Cortex 7:237–252'],
+  ['Softky & Koch (1993).','The highly irregular firing of cortical cells is inconsistent with temporal integration of random EPSPs.','J Neurosci 13:334–350'],
+  ['Holt, Softky, Koch & Douglas (1996).','Comparison of discharge variability in vitro and in vivo in cat visual cortex neurons.','J Neurophysiol 75:1806–1814'],
+  ['Churchland et al. (2010).','Stimulus onset quenches neural variability: a widespread cortical phenomenon.','Nat Neurosci 13:369–378'],
+  ['Cohen & Kohn (2011).','Measuring and interpreting neuronal correlations.','Nat Neurosci 14:811–819'],
+  ['Cohen (1988).','Statistical Power Analysis for the Behavioral Sciences, 2nd ed.','Lawrence Erlbaum'],
+  ['Kish (1965).','Survey Sampling.','Wiley'],
+  ['Hedges & Hedberg (2007).','Intraclass correlation values for planning group-randomized trials in education.','Educ Eval Policy Anal 29:60–87'],
+  ['Button et al. (2013).','Power failure: why small sample size undermines the reliability of neuroscience.','Nat Rev Neurosci 14:365–376'],
+  ['Kraft (2020).','Interpreting effect sizes of education interventions.','Educ Researcher 49:241–253'],
+  ['Marek et al. (2022).','Reproducible brain-wide association studies require thousands of individuals.','Nature 603:654–660']]],
  ['Textbooks',[
   ['Kandel, Koester, Mack & Siegelbaum (2021).','Principles of Neural Science, 6th ed.','McGraw-Hill'],
   ['Purves et al. (2018).','Neuroscience, 6th ed.','Oxford University Press'],
@@ -1055,7 +1109,7 @@ function drawBrPhase(){ const c=$('brPhase'); if(!c) return; const {ctx,w,h}=set
   ctx.font='600 11px Inter, system-ui'; ctx.fillStyle='#ff8a65'; ctx.fillText('SR',X(1.6),Y(3.4)); ctx.fillStyle='#66d9a8'; ctx.fillText('AI (SI fast at higher drive)',X(4.3),Y(3.4)); ctx.fillStyle='#4fc3f7'; ctx.fillText('SI slow',X(6.2),Y(0.5));
   for(const [g,e,lab] of [[3,2,'SR'],[5,2,'AI'],[6,4,'SI fast'],[4.5,0.9,'SI slow']]){ ctx.fillStyle='#c9d2e3'; ctx.beginPath(); ctx.arc(X(g),Y(e),4,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#8e9bb3'; ctx.font='10px Inter, system-ui'; ctx.fillText(lab,X(g)+6,Y(e)-5); }
   ctx.strokeStyle='#ffd166'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(X(br.g),Y(br.eta),7,0,Math.PI*2); ctx.stroke(); ctx.fillStyle='#ffd166'; ctx.font='600 11px Inter, system-ui'; ctx.fillText(`g=${br.g.toFixed(1)}, η=${br.eta.toFixed(1)}`,Math.min(X(br.g)+10,w-110),Y(br.eta)+16); }
-(function brunelUI(){ const sync=()=>{ br.g=+$('brG').value; br.eta=+$('brEta').value; $('brG_o').textContent=br.g.toFixed(1); $('brEta_o').textContent=br.eta.toFixed(1); $('brSpd_o').textContent=$('brSpd').value; drawBrPhase(); };
+(function brunelUI(){ const sync=()=>{ br.g=+$('brG').value; br.eta=+$('brEta').value; $('brG_o').textContent=br.g.toFixed(1); $('brEta_o').textContent=br.eta.toFixed(1); $('brSpd_o').textContent=$('brSpd').value; drawBrPhase(); brTheoryUpdate(); };
   ['brG','brEta','brSpd'].forEach(id=>$(id).addEventListener('input',sync)); sync();
   document.querySelectorAll('[data-br]').forEach(b=>b.addEventListener('click',()=>{ const [g,e]=b.dataset.br.split(',').map(Number); $('brG').value=g; $('brEta').value=e; sync(); }));
   $('brPhase').addEventListener('click',e=>{ const r=$('brPhase').getBoundingClientRect(); const w=r.width,h=r.height; const p={l:44,r:12,t:22,b:26}; const g=clamp((e.clientX-r.left-p.l)/(w-p.l-p.r)*8,0,8); const eta=clamp((1-(e.clientY-r.top-p.t)/(h-p.t-p.b))*4,0.2,4); $('brG').value=g.toFixed(1); $('brEta').value=eta.toFixed(1); sync(); });
@@ -1104,3 +1158,94 @@ function runValidation(){ const base={model:'hh',I:0,t0:0,dur:200,noise:0,gNa:1,
   return out; }
 $('nValidBtn').addEventListener('click',()=>{ const box=$('nValid'); box.style.display=''; box.innerHTML=`<p style="color:var(--muted);font-size:12.5px">${t('valRunning','Running checks…')}</p>`; setTimeout(()=>{ const res=runValidation(); const ok=res.filter(x=>x.pass).length;
   box.innerHTML=`<h3 style="margin:0 0 6px;color:var(--accent)">${t('valTitle','Validation')}: ${ok}/${res.length} ${t('valPassed','passed')}</h3><table class="tbl"><tr><th>${t('valName','Check')}</th><th>${t('valGot','Result')}</th><th>${t('valExp','Expected')}</th><th></th><th>${t('valRef','Reference')}</th></tr>${res.map(x=>`<tr><td>${x.name}</td><td style="font-family:var(--mono)">${x.got}</td><td style="font-family:var(--mono)">${x.exp}</td><td style="color:${x.pass?'var(--good)':'var(--bad)'}">${x.pass?'✓':'✗'}</td><td style="color:var(--muted)">${x.ref}</td></tr>`).join('')}</table><p style="font-size:12px;color:var(--muted)">${t('valNote','Checks run the simulations in this page with their current numerical settings; expected ranges are textbook values. A failed check means a bug or a parameter outside the standard regime.')}</p>`; },30); });
+
+
+// ============================================================ v1.7 additions
+// mean-field prediction for the Brunel network (computed in bench.js)
+function brTheoryUpdate(){ const e=$('brTheory'); if(!e||!window.Bench) return; const roots=window.Bench.brunelMF(br.g,br.eta,{J:BR.J,CE:BR.CE,gam:BR.CI/BR.CE,tau:BR.tau/1000,theta:BR.theta,Vr:BR.Vr,trp:BR.trp/1000}); const st=roots.filter(r=>r.stable);
+  e.textContent=!st.length?'–':st.length===1?st[0].nu.toFixed(1)+' Hz':st.map(r=>r.nu.toFixed(1)).join(' / ')+' Hz'; }
+window.addEventListener('load',()=>{ try{ brTheoryUpdate(); }catch(e){} });
+// plain-Python export of the current single-neuron simulation
+function neuronPython(P){ const head=`# HaiBrainLab ${APP_VERSION}: single-neuron simulation exported as plain Python (standard library only)
+# Reproduces the browser run: same equations, same forward-Euler step, same pulse.${P.noise?'\n# Noise was on in the browser. The random numbers differ here, so spike times will not match exactly.':''}
+import math, random
+random.seed(12345)
+T = 200.0            # ms
+I_amp, t0, dur, noise = ${P.I}, ${P.t0}, ${P.dur}, ${P.noise}
+`;
+  const tail=`
+print("spikes:", len(spikes))
+print("spike times (ms):", [round(s, 2) for s in spikes])
+try:
+    import matplotlib.pyplot as plt
+    plt.plot(ts, Vs); plt.xlabel("time (ms)"); plt.ylabel("V (mV)"); plt.title("${P.model.toUpperCase()} neuron, I = ${P.I}"); plt.show()
+except ImportError:
+    pass
+`;
+  if(P.model==='hh') return head+`dt = 0.01
+C, gNa, gK, gL = 1.0, ${120*P.gNa}, ${36*P.gK}, ${0.3*P.gL}      # uF/cm2, mS/cm2
+ENa, EK, EL = 50.0, -77.0, -54.387                      # mV
+
+def rates(V):
+    am = 1.0 if abs(V + 40) < 1e-6 else 0.1 * (V + 40) / (1 - math.exp(-(V + 40) / 10))
+    bm = 4 * math.exp(-(V + 65) / 18)
+    ah = 0.07 * math.exp(-(V + 65) / 20)
+    bh = 1 / (1 + math.exp(-(V + 35) / 10))
+    an = 0.1 if abs(V + 55) < 1e-6 else 0.01 * (V + 55) / (1 - math.exp(-(V + 55) / 10))
+    bn = 0.125 * math.exp(-(V + 65) / 80)
+    return am, bm, ah, bh, an, bn
+
+v = -65.0
+am, bm, ah, bh, an, bn = rates(v)
+m, h, n = am / (am + bm), ah / (ah + bh), an / (an + bn)
+spikes, ts, Vs, above = [], [], [], False
+for s in range(int(round(T / dt)) + 1):
+    t = s * dt
+    I = (I_amp if t0 <= t < t0 + dur else 0.0) + (noise * random.gauss(0, 1) * 3 if noise else 0.0)
+    am, bm, ah, bh, an, bn = rates(v)
+    dv = (I - gNa * m**3 * h * (v - ENa) - gK * n**4 * (v - EK) - gL * (v - EL)) / C
+    m += dt * (am * (1 - m) - bm * m)
+    h += dt * (ah * (1 - h) - bh * h)
+    n += dt * (an * (1 - n) - bn * n)
+    v += dt * dv
+    if v > 0 and not above:
+        above = True; spikes.append(t)
+    if v < -20:
+        above = False
+    if s % 5 == 0:
+        ts.append(t); Vs.append(v)
+`+tail;
+  if(P.model==='lif') return head+`dt = 0.1
+tau, V_th, t_ref, V_reset, EL = ${P.lTau}, ${P.lTh}, ${P.lRef}, ${P.lReset}, -65.0
+
+v, ref = EL, 0.0
+spikes, ts, Vs = [], [], []
+for s in range(int(round(T / dt)) + 1):
+    t = s * dt
+    I = ((I_amp if t0 <= t < t0 + dur else 0.0) + (noise * random.gauss(0, 1) if noise else 0.0)) * 1.2   # R*I in mV
+    if ref > 0:
+        ref -= dt; v = V_reset
+    else:
+        v += dt * (-(v - EL) + I) / tau
+        if v >= V_th:
+            spikes.append(t); v = V_reset; ref = t_ref
+    ts.append(t); Vs.append(v)
+`+tail;
+  return head+`dt = 0.1
+a, b, c, d = ${P.iA}, ${P.iB}, ${P.iC}, ${P.iD}
+
+v = -65.0
+u = b * v
+spikes, ts, Vs = [], [], []
+for s in range(int(round(T / dt)) + 1):
+    t = s * dt
+    I = (I_amp if t0 <= t < t0 + dur else 0.0) + (noise * random.gauss(0, 1) if noise else 0.0)
+    if v >= 30:
+        spikes.append(t); v = c; u += d
+    v += dt * (0.04 * v * v + 5 * v + 140 - u + I)
+    u += dt * a * (b * v - u)
+    if v > 30:
+        v = 30.0
+    ts.append(t); Vs.append(v)
+`+tail; }
+$('nPy').addEventListener('click',()=>{ if(!lastSim) return; brainlabDownload('data:text/x-python;charset=utf-8,'+encodeURIComponent(neuronPython(lastSim.P)),'haibrainlab_neuron_'+lastSim.P.model+'.py'); });

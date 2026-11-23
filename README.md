@@ -2,7 +2,7 @@
 
 **Live:** https://hainguyen-python.github.io/haibrainlab/ · Source: https://github.com/HaiNguyen-python/haibrainlab
 
-Version 1.6.0 · MIT License · [Changelog](CHANGELOG.md) · [Methods](docs/METHODS.md) · [Content review](docs/REVIEW.md) · [Cite](CITATION.cff)
+Version 1.7.0 · MIT License · [Changelog](CHANGELOG.md) · [Methods](docs/METHODS.md) · [Content review](docs/REVIEW.md) · [Cite](CITATION.cff)
 
 An interactive neuroscience simulator for learning how the brain works, from a single ion channel up to whole-brain pathways, with classroom and research modules. Runs entirely in the browser; nothing is collected.
 
@@ -13,6 +13,8 @@ brain-lab/
   index.html        page, markup for all tabs, and the inline three.js 3D module
   css/app.css       stylesheet (dark theme, print stylesheet, reduced motion)
   js/app.js         simulations, lessons, tabs, export, About dialog
+  js/bench.js       research bench: nine tools, mean-field theory, automatic checks
+  js/i18n.vi*.js    Vietnamese strings (interface, lessons, scenarios, bench)
   docs/METHODS.md   every model's equations and parameters
   CITATION.cff, CHANGELOG.md, LICENSE
 ```
@@ -29,6 +31,24 @@ EN | VI switch in the header (remembered in the browser; `index.html?lang=vi` al
 - **CSV export**: the Neuron tab exports the current trace (time, voltage, gating variables or recovery variable, injected current); the Network tab exports the last second of spikes (time, neuron, E/I) and the last 1024 ms of the simulated LFP. Load them in Python or R for analysis.
 - **Reference library** (📚, or key `l`): every study and book the app draws on, grouped by topic, searchable, with search links. Citation details should be confirmed against the originals.
 
+## Research bench
+
+Tab 9 holds nine tools. Each reproduces a published result, compares the simulation with theory where an exact answer exists, exports its data as CSV, and has a deep link such as `#bench/kuramoto`.
+
+| Tool | Result reproduced | Theory check |
+|---|---|---|
+| Associative memory | Hopfield (1982) pattern completion, interference between similar memories | capacity α_c ≈ 0.138 |
+| Synaptic competition | Song, Miller & Abbott (2000): two-humped weights, rate normalisation | none exact; published figures |
+| Dopamine and prediction error | Schultz, Dayan & Montague (1997): error moves from reward to cue, dip at omitted reward | converged values of the TD error |
+| Decisions | Ratcliff (1978) drift-diffusion: speed–accuracy trade-off, slow errors, optimal caution | exact accuracy and mean decision time |
+| Where rhythms come from | Wilson & Cowan (1972) limit cycle, phase plane, bifurcation diagram | none exact |
+| Falling into step | Kuramoto (1975) synchronisation transition | exact r(K) for Lorentzian frequencies |
+| One neuron, two states | Hodgkin–Huxley hysteresis; switching firing on and off with single pulses (Guttman, Lewis & Rinzel 1980) | bifurcation values of Rinzel & Miller (1980) |
+| Analyse spike trains | CV, CV2, Fano factor, pairwise correlation, autocorrelation on demo data, the Network tab raster, or **your own CSV** | Poisson and gamma renewal values |
+| Study planner | sample size and power, including whole-class (clustered) designs | Cohen's table values |
+
+"Run all bench checks" executes 27 automatic comparisons. Also new in 1.7: the Network tab shows the mean-field prediction for the Brunel network next to the simulated rate, and the Neuron tab exports the current run as a plain Python script.
+
 ## Science layer
 
 - **Brunel 2000 reproduction**: switch the Network tab to the sparse leaky integrate-and-fire model, click the regime diagram or the paper's four example points (SR, AI, SI fast, SI slow) and compare the raster, rate, CV(ISI) and spectrum with the published regimes.
@@ -39,7 +59,7 @@ EN | VI switch in the header (remembered in the browser; `index.html?lang=vi` al
 ## Sharing, shortcuts, export
 
 - Deep links: `index.html#neuron`, `#code`, and live scenarios such as `#live/code_ai` or `#live/learn`.
-- Keyboard: `0`–`8` switch tabs, `g` opens the glossary, `?` opens About, `Esc` closes dialogs.
+- Keyboard: `0`–`9` switch tabs, `g` opens the glossary, `?` opens About, `Esc` closes dialogs.
 - Hover any chart for a PNG download; both 3D views have a screenshot button.
 - Print the Start here or Programming brain tab for a handout; controls are hidden and colours switch to print-friendly.
 
@@ -66,6 +86,7 @@ then visit http://localhost:8129.
 | 6 | Language class | A classroom demonstration of what frequent language practice does to the brain: an animated six-stage timeline (day 1 to fluent, plus "what if you stop") with glowing areas, growing connections and meters for effort, speed, accuracy, automaticity, myelin and vocabulary; a forgetting-curve simulator comparing two learners with equal weekly time (cramming vs little-and-often, with sleep and self-testing toggles); a 30-second class word-memory test with explanation; buttons that play two language scenarios on the 3D live brain; teacher talking points with sources; a presentation mode with large text and fullscreen |
 | 7 | Programming brain | A research view for computing education: five 3D scenarios on the live brain (reading code as a novice, hunting a bug, writing from a task, the expert brain, AI solution vs working it out), a network diagram that changes with task (read, debug, write, data structure, read a solution) and expertise with cognitive-load meters, a "cost of easy answers" model comparing four support strategies (immediate performance, encoding, one-week recall, confidence, frustration), an evidence table of fMRI/fNIRS/EEG studies of programmers, and a study-design section with hypotheses H1–H5 and measures |
 | 8 | Quiz | 28-question pool, 10 per round, each explanation points back to an experiment |
+| 9 | Research bench | Nine research tools (see below): Hopfield memory, STDP competition, TD learning and dopamine, drift-diffusion decisions, Wilson–Cowan rhythms, Kuramoto synchronisation, Hodgkin–Huxley bistability, a spike-train analyser for your own data, and a study planner |
 
 Each tab has a lesson panel with guided "Try this" experiments that set the sliders for you.
 
@@ -85,5 +106,5 @@ All charts share one canvas engine with filled curves, glow, swatch legends, ann
 ## Next steps toward a research-grade project
 
 - Replace the all-to-all cortex with distance-dependent connectivity and conduction delays.
-- Add a Python companion (Brian2) that reproduces each tab's experiment with a test checking firing rates against the browser version.
+- Extend the Python export from the single neuron to the networks (Brian2) with a test checking firing rates against the browser version.
 - Load real recorded neurons from the Allen Cell Types Database and fit Izhikevich parameters to them.

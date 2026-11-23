@@ -56,7 +56,33 @@ For difficulty d (1–5), prior p (0–1), n exercises and support level s (0 no
 
 These are hypotheses expressing the generation effect, testing effect, desirable difficulties, productive failure and the expertise-reversal effect, to be tested with the measures listed in the tab.
 
-## 7. Accuracy notes
+## 7. Research bench (tab 9)
+
+Every tool has a seed field; the seed is written into CSV exports. "Run all bench checks" runs each model against the value quoted below.
+
+**Mean-field theory for the Brunel network (Network tab pill).** Stationary rate ν₀ from the self-consistent Siegert formula of Amit & Brunel (1997) and Brunel (2000): 1/ν₀ = τ_rp + τ√π ∫ from (V_r − μ)/σ to (θ − μ)/σ of e^{u²}(1 + erf u) du, with μ = J·C_E·τ·(ν_ext + ν₀(1 − gγ)), σ² = J²·C_E·τ·(ν_ext + ν₀(1 + g²γ)), γ = C_I/C_E. The integrand is evaluated as the scaled complementary error function (Chebyshev fit, fractional error below 1.2·10⁻⁷), integrated by Simpson's rule with 400 intervals; roots are bracketed on a logarithmic grid from 0.001 to 500 Hz and refined by bisection. The formula describes the asynchronous state and is shown for all parameters; it is not expected to hold in synchronous regimes.
+
+**Associative memory.** Hopfield (1982) network, N = 256 units s_i = ±1, w_ij = (1/N) Σ_μ ξ_i^μ ξ_j^μ, w_ii = 0, asynchronous updates in random order s_i ← sign(Σ_j w_ij s_j) (a unit with zero input keeps its state), energy E = −½ Σ w_ij s_i s_j. The five default patterns are geometric shapes with about half the units on and pairwise overlaps of at most 0.25. The capacity experiment uses N = 400, random patterns, loads α = 0.02 to 0.30, and reports the mean overlap after recall started exactly at a stored pattern (8 patterns per load, sequential sweeps to a fixed point). Reference value α_c ≈ 0.138 (Amit, Gutfreund & Sompolinsky 1985).
+
+**Synaptic competition.** Song, Miller & Abbott (2000): τ_m dV/dt = V_rest − V + g_ex(E_ex − V) + g_in(E_in − V), V_rest = −70, E_ex = 0, E_in = −70, threshold −54, reset −60 mV, τ_m = 20 ms, no refractory period. 1000 excitatory Poisson inputs with peak conductances g_a in [0, g_max], g_max = 0.015 (units of the leak conductance), 200 inhibitory Poisson inputs at 10 Hz with conductance 0.05; both conductances decay with 5 ms. STDP with all spike pairs: on a presynaptic spike P_a += A₊, g_a += M·g_max; on a postsynaptic spike M −= A₋, g_a += P_a·g_max for all a; P_a and M decay with 20 ms; A₊ = 0.005, A₋ = 1.05·A₊ by default. Forward Euler, dt = 0.1 ms. All weights start at 0.5·g_max, which is a choice made here.
+
+**Dopamine and prediction error.** TD(λ) with a complete serial compound (tapped delay line): trial of 25 steps of 100 ms, cue at step 5, reward of size 1 at step 20; one weight per step after cue onset; δ_t = r_{t+1} + γV_{t+1} − V_t, e ← γλe + x_t, w ← w + αδe. Before the cue V = 0, so the cue-onset error cannot be learned away. The "after learning" curves are probe trials run with the final weights and no learning.
+
+**Drift-diffusion.** dx = v·dt + s·dW from x = a/2 to absorbing boundaries at 0 and a, s = 0.1, Euler–Maruyama with dt = 1 ms, 2000 trials. To correct for monitoring the boundaries only once per step, both are moved inward by 0.5826·s·√dt (Broadie, Glasserman & Kou 1997). Theory for the pure model: P(correct) = 1/(1 + e^{−av/s²}), mean decision time = (a/2v)·tanh(av/2s²) (Bogacz et al. 2006). Reward rate = P(correct) / (decision time + non-decision time + pause between trials). Drift variability draws v from a normal distribution on each trial; the theory values shown assume none.
+
+**Wilson–Cowan.** τ dE/dt = −E + (1 − E)·S_E(w_EE·E − w_EI·I + P), τ dI/dt = −I + (1 − I)·S_I(w_IE·E − w_II·I), S(x) = 1/(1 + e^{−a(x−θ)}) − 1/(1 + e^{aθ}), a_E = 1.3, θ_E = 4, a_I = 2, θ_I = 3.7, refractory factors 1. Defaults w_EE = 16, w_EI = 12, w_IE = 15, w_II = 3, P = 1.25 (the limit-cycle example of Wilson & Cowan 1972). Heun's method, dt = 0.01 τ, 100 τ per run. Frequency is measured from upward crossings of the mean of E over the last 40 % of the run and converted with the chosen τ (10 ms by default, a free choice).
+
+**Kuramoto.** dθ_i/dt = ω_i + K·r·sin(ψ − θ_i) with r·e^{iψ} = (1/N) Σ e^{iθ_j}, N = 400, forward Euler, dt = 0.02. Natural frequencies are the quantiles of a Lorentzian with half-width γ = 1, which removes sampling noise in the frequencies. Exact result for N → ∞: K_c = 2γ, r = √(1 − K_c/K). The sweep raises K in steps of 0.25 without resetting phases, 30 time units of settling and 30 of averaging per step.
+
+**Hodgkin–Huxley bistability.** Same equations and step as section 1. The sweep changes the current in steps of 0.25 µA/cm² and holds each value for 240 ms (120 ms settling, 120 ms measurement), carrying the state from one value to the next. Optional current noise is white with intensity σ (added as σ·ξ/√dt). The switching experiment first brings the neuron to its rest state at the chosen bias with a 300 ms ramp, applies a 2 ms pulse at 40 ms, and applies a second 2 ms pulse a set delay after the sixth spike. Reference values: Hopf bifurcation at 9.78 µA/cm², fold of limit cycles at 6.26 µA/cm² (Rinzel & Miller 1980).
+
+**Spike-train analyser.** CV = SD/mean of interspike intervals per neuron, averaged over neurons with at least three intervals. CV2 = mean of 2|ISI_{k+1} − ISI_k| / (ISI_{k+1} + ISI_k) (Holt et al. 1996). Fano factor = variance/mean of spike counts in non-overlapping windows, per neuron, averaged over neurons that fired. Pairwise correlation = mean Pearson correlation of the windowed counts over up to 300 random pairs. Autocorrelation = normalised autocovariance of the 1 ms population count, lags ±150 ms, first 60 s. Demo data: Poisson; gamma renewal process of order 8; a two-component mixture of short and long exponential intervals; and an inhomogeneous Poisson process with 10 Hz sinusoidal modulation of depth 0.8 shared by all neurons, generated by thinning.
+
+**Study planner.** Two-sided test, normal approximation with Guenther's correction: n per group = 2(z_{1−α/2} + z_power)²/d² + z²_{1−α/2}/4; paired: n = (z_{1−α/2} + z_power)²/d² + z²_{1−α/2}/2. Clustered assignment multiplies n by the design effect 1 + (m − 1)·ICC. The inverse normal uses Acklam's rational approximation.
+
+**Python export (Neuron tab).** Writes a standard-library Python script with the same equations, time step and pulse as the browser run. Verified to reproduce the browser's spike times for all three models; with noise on, the random numbers differ.
+
+## 8. Accuracy notes
 
 Numbers in lessons (neuron counts, timings, percentages) are textbook values; study findings are paraphrased and should be checked against the original papers before citation. The "find paper" links open a search for each study.
 
